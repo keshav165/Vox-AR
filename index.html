@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voice to 3D Model Generator</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+  <!-- GIF Preview -->
+  <!-- File Picker for Models -->
+  <label for="model-select">Select Model:</label>
+  <select id="model-select"></select>
+
+  <!-- GIF Preview -->
+  <img id="model-preview" src="" alt="Model preview" style="display:none;">
+
+  <!-- 3D Viewer -->
+  <div id="viewer"></div>
+
+  <!-- three.js and loaders -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/OBJLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/PLYLoader.js"></script>
+  <script>
+    // List all models in the generated_models directory (static list for now)
+    const models = [
+      {
+        base: "Generate_a_3d_model_of_a_kidney._3d",
+        gif: "generated_models/Generate_a_3d_model_of_a_kidney._3d.gif",
+        obj: "generated_models/Generate_a_3d_model_of_a_kidney._3d.obj",
+        ply: "generated_models/Generate_a_3d_model_of_a_kidney._3d.ply"
+      }
+      // Add more models here as needed
+    ];
+
+    const modelSelect = document.getElementById('model-select');
+    models.forEach((model, idx) => {
+      const option = document.createElement('option');
+      option.value = idx;
+      option.text = model.base;
+      modelSelect.appendChild(option);
+    });
+
+    function clearScene() {
+      while(scene.children.length > 0){ 
+        scene.remove(scene.children[0]); 
+      }
+      scene.add(light);
+    }
+
+    function showModel(idx) {
+      const model = models[idx];
+      // Show GIF
+      const gif = document.getElementById('model-preview');
+      gif.src = model.gif;
+      gif.style.display = 'block';
+      // Show OBJ or PLY
+      clearScene();
+      camera.position.z = 2;
+      // Try OBJ first, then PLY
+      fetch(model.obj, {method: 'HEAD'}).then(res => {
+        if (res.ok) {
+          const loader = new THREE.OBJLoader();
+          loader.load(model.obj, function (object) {
+            scene.add(object);
+            animate();
+          });
+        } else {
+          const loader = new THREE.PLYLoader();
+          loader.load(model.ply, function (geometry) {
+            geometry.computeVertexNormals();
+            const material = new THREE.MeshStandardMaterial({ color: 0x888888 });
+            const mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+            animate();
+          });
+        }
+      });
+    }
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, 600/400, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(600, 400);
+    document.getElementById('viewer').appendChild(renderer.domElement);
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(0, 1, 2).normalize();
+    scene.add(light);
+    camera.position.z = 2;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
+
+    modelSelect.addEventListener('change', (e) => {
+      showModel(e.target.value);
+    });
+    // Load the first model by default
+    if(models.length > 0) showModel(0);
+  </script>
+</body>
+</html>
