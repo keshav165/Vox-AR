@@ -1,0 +1,6 @@
+torch
+shap_e
+sounddevice
+SpeechRecognition
+imageio>=2.31.0
+numpy

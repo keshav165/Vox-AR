@@ -1,0 +1,6 @@
+Generate_a_3d_model_of_a_kidney._3d.gif
+Generate_a_3d_model_of_a_kidney._3d.ply
+Generate_a_3d_model_of_a_kidney._3d.obj
+model_1.gif
+model_1.ply
+model_1.obj
